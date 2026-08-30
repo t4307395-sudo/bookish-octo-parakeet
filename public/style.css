@@ -242,3 +242,81 @@ body.drawer-open { overflow: hidden; }
   .app-page { padding: 0 20px 20px; }
   .app-page .wrap { margin: 28px 0 0; max-width: none; width: 100%; }
 }
+
+/* === إعادة تصميم كاملة: طابع منافسة محلية واضح وبسيط === */
+:root {
+  --bg: #0b1118;
+  --card: #121b26;
+  --accent: #ffb84d;
+  --accent2: #27d3b1;
+  --text: #f6f2e9;
+  --muted: #9aa7b6;
+  --danger: #ff6f61;
+  --radius: 16px;
+  --sidebar: 238px;
+  --line: rgba(255,255,255,.09);
+  --surface: #121b26;
+  --surface2: #192635;
+}
+
+body {
+  background: radial-gradient(900px 520px at 12% -8%, #183548 0%, #0b1118 58%);
+  color: var(--text);
+}
+body.dashboard-page { background: #0b1118; }
+.card, .panel, .stat-card, .hero-card, .mistake-card {
+  border-color: rgba(255,255,255,.09);
+  box-shadow: 0 14px 35px rgba(0,0,0,.14);
+}
+.card, .panel { background: #121b26; }
+button { background: linear-gradient(135deg, #ffb84d, #f08b3d); color: #1b160f; }
+button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+button.secondary { color: var(--text); background: transparent; }
+.primary-action, .global-create { background: linear-gradient(135deg, #ffb84d, #f08b3d); color: #1b160f; }
+.hero-card { background: linear-gradient(115deg, #26354a 0%, #173642 58%, #254535 100%); border-color: rgba(255,184,77,.24); }
+.hero-btn { background: var(--accent2); color: #071b1a; }
+.hero-btn.ghost { background: rgba(255,255,255,.07); color: var(--text); }
+.stat-card { background: #121b26; }
+.stat-icon.violet { background: rgba(255,184,77,.16); color: #ffc76c; }
+.stat-icon.turquoise { background: rgba(39,211,177,.14); color: var(--accent2); }
+.stat-icon.orange { background: rgba(240,139,61,.15); color: #ffad63; }
+.stat-icon.pink { background: rgba(255,111,97,.14); color: #ff897d; }
+.global-sidebar, .sidebar { background: #0e1722; border-color: var(--line); }
+.global-sidebar { width: 238px; padding: 22px 13px 16px; }
+.sidebar { width: 238px; flex-basis: 238px; padding: 22px 13px 16px; }
+.global-brand, .brand-block { padding-inline: 9px; }
+.brand-mark { background: linear-gradient(135deg, #ffb84d, #27d3b1); color: #10202b; box-shadow: 0 8px 20px rgba(39,211,177,.18); }
+.global-side-link, .side-link { color: #aeb9c6; }
+.global-side-link.active, .side-link.active { background: rgba(255,184,77,.12); border-color: rgba(255,184,77,.32); color: #fff7e8; }
+.global-side-link.active span, .side-link.active span { color: var(--accent); }
+.global-side-link:hover, .side-link:hover { background: rgba(255,255,255,.06); }
+.global-topbar { margin-right: 278px; max-width: 1080px; }
+.main-content { padding-inline: 38px; }
+.app-page .wrap { max-width: 1050px; margin-top: 62px; }
+.app-page { padding-inline: 32px; }
+input[type=text], input[type=number], input[type=email], input[type=password], textarea, select {
+  background: #0b141e; border-color: rgba(255,255,255,.13);
+}
+input:focus, textarea:focus, select:focus { outline: 2px solid rgba(39,211,177,.38); outline-offset: 1px; border-color: var(--accent2); }
+.option-btn { background: #0b141e; }
+.option-btn:hover { border-color: rgba(255,184,77,.55); background: rgba(255,184,77,.08); }
+.option-btn.selected { border-color: var(--accent); background: rgba(255,184,77,.14); }
+.chat-msg { background: #172433; }
+.chat-msg .who, a { color: var(--accent2); }
+.global-side-bottom { border-color: var(--line); }
+.sidebar-tip { background: rgba(39,211,177,.07); border-color: rgba(39,211,177,.18); }
+.progress-fill { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+.link-box, .invite-box { border-color: var(--accent); }
+
+@media (min-width: 861px) and (max-width: 1080px) {
+  .global-sidebar, .sidebar { width: 216px; flex-basis: 216px; }
+  .global-topbar { margin-right: 250px; margin-left: 18px; }
+  .app-page .wrap { margin-top: 48px; }
+  .main-content { padding-inline: 24px; }
+}
+
+@media (max-width: 860px) {
+  .global-topbar { margin: 0; padding-inline: 18px; }
+  .app-page { padding-inline: 18px; }
+  .app-page .wrap { margin-top: 28px; }
+}

@@ -78,16 +78,27 @@
     // ترجع تشوف نتائجه من "اختباراتي"). نتحقق الأول قبل ما نسيب المعلم
     // يملأ الفورم.
     async function checkAuth() {
-      const res = await fetch('/api/auth/me');
-      const data = await res.json().catch(() => ({ user: null }));
-      if (!data.user) {
+      try {
+        const res = await fetch('/api/auth/me');
+        const data = await res.json().catch(() => ({ user: null }));
+        if (!res.ok && data.error) {
+          authGate.style.display = 'block';
+          authGate.innerHTML = `<span class="error">${data.error}</span>`;
+          submitBtn.disabled = true;
+          return;
+        }
+        if (!data.user) {
+          authGate.style.display = 'block';
+          authGate.innerHTML = 'لازم <a href="login.html">تسجل دخول</a> الأول عشان تنشئ اختبار. <a href="register.html">اعمل حساب جديد</a>';
+          submitBtn.disabled = true;
+          return;
+        }
+        await Promise.all([loadCategories(), loadClasses()]);
+      } catch {
         authGate.style.display = 'block';
-        authGate.innerHTML = 'لازم <a href="login.html">تسجل دخول</a> الأول عشان تنشئ اختبار (كده تقدر ترجع تشوفه بعدين من صفحة اختباراتي). <a href="register.html">مالكش حساب؟ اعمل واحد</a>';
+        authGate.innerHTML = '<span class="error">تعذر التحقق من الجلسة. حدّث الصفحة وحاول مرة أخرى.</span>';
         submitBtn.disabled = true;
-        return;
       }
-      loadCategories();
-      loadClasses();
     }
 
     async function loadCategories() {
@@ -159,7 +170,7 @@
           const fallback = res.status >= 500
             ? 'حدث خطأ داخلي في الخادم. حاول مرة أخرى لاحقاً.'
             : 'تعذر إنشاء الاختبار بالبيانات الحالية.';
-          alert('خطأ (' + res.status + '): ' + (data.error || fallback));
+          showFormError('خطأ (' + res.status + '): ' + (data.error || fallback));
           submitBtn.disabled = false;
           submitBtn.textContent = 'إنشاء الاختبار';
           return;
@@ -176,12 +187,24 @@
         form.style.display = 'none';
         
       } catch (err) {
-        alert('تعذر الاتصال بالخادم. تحقق من اتصالك وحاول مرة أخرى.');
+        showFormError('تعذر الاتصال بالخادم. تحقق من اتصالك وحاول مرة أخرى.');
         console.error('create quiz request failed', err);
         submitBtn.disabled = false;
         submitBtn.textContent = 'إنشاء الاختبار';
       }
     });
+
+    function showFormError(message) {
+      let box = document.getElementById('formError');
+      if (!box) {
+        box = document.createElement('p');
+        box.id = 'formError';
+        box.className = 'error';
+        form.prepend(box);
+      }
+      box.textContent = message;
+      box.style.display = 'block';
+    }
 
     function copyLink() {
       const link = inviteLink.textContent;

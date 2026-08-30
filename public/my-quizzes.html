@@ -30,15 +30,14 @@ function fmtDate(ts) {
 
 async function load() {
   const list = document.getElementById('list');
-  const res = await fetch('/api/quizzes/mine');
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    list.innerHTML = '';
-    const err = document.getElementById('err');
-    err.textContent = data.error || 'حصل خطأ';
-    err.style.display = 'block';
-    return;
-  }
+  try {
+    const res = await fetch('/api/quizzes/mine');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      list.innerHTML = `<div class="card empty-state"><b>${data.error || 'تعذر تحميل اختباراتك.'}</b><span>جرّب تحديث الصفحة، وإذا استمر الخطأ تأكد من تحديث مخطط قاعدة البيانات.</span><button class="secondary" id="retryMine">إعادة المحاولة</button></div>`;
+      document.getElementById('retryMine').addEventListener('click', load);
+      return;
+    }
 
   list.innerHTML = '';
   if (!data.quizzes || data.quizzes.length === 0) {
@@ -46,7 +45,7 @@ async function load() {
     return;
   }
 
-  data.quizzes.forEach((q) => {
+    data.quizzes.forEach((q) => {
     const card = document.createElement('div');
     card.className = 'card';
 
@@ -79,8 +78,12 @@ async function load() {
     links.appendChild(playBtn);
 
     card.appendChild(links);
-    list.appendChild(card);
-  });
+      list.appendChild(card);
+    });
+  } catch (error) {
+    list.innerHTML = `<div class="card empty-state"><b>تعذر الاتصال بالخادم.</b><span>${error.message || 'حاول مرة أخرى بعد قليل.'}</span><button class="secondary" id="retryMine">إعادة المحاولة</button></div>`;
+    document.getElementById('retryMine').addEventListener('click', load);
+  }
 }
 load();
 </script>
