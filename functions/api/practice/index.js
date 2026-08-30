@@ -5,6 +5,7 @@ import { json } from "../../_lib/auth.js";
 
 export async function onRequestGet(context) {
   const { request, env } = context;
+  if (!env?.DB) return json({ error: 'قاعدة البيانات غير مرتبطة بالمشروع. أضف D1 binding باسم DB ثم أعد النشر.' }, 503);
   const url = new URL(request.url);
   const category = url.searchParams.get("category")?.trim();
   const count = Math.min(Math.max(Number(url.searchParams.get("count")) || 10, 1), 50);

@@ -4,6 +4,7 @@ import { json } from "../../../_lib/auth.js";
 
 export async function onRequestGet(context) {
   const { env } = context;
+  if (!env?.DB) return json({ error: 'قاعدة البيانات غير مرتبطة بالمشروع. أضف D1 binding باسم DB ثم أعد النشر.' }, 503);
   const { results } = await env.DB.prepare(
     `SELECT quiz_id, COUNT(*) as count FROM questions
      WHERE quiz_id LIKE 'bank:%' AND exam_only = 0 GROUP BY quiz_id ORDER BY quiz_id ASC`

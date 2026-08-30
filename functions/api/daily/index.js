@@ -37,6 +37,7 @@ async function pickTodayQuestion(env, dateStr) {
 
 export async function onRequestGet(context) {
   const { request, env } = context;
+  if (!env?.DB) return json({ error: 'قاعدة البيانات غير مرتبطة بالمشروع. أضف D1 binding باسم DB ثم أعد النشر.' }, 503);
   const date = todayUTC();
   const question = await pickTodayQuestion(env, date);
   if (!question) return json({ error: "مفيش أسئلة في البنك لسه" }, 404);

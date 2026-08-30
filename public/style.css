@@ -196,3 +196,49 @@ small { color: var(--muted); display: block; margin-top: 6px; font-size: .82rem;
 .global-sidebar { position: fixed; z-index: 10; top: 0; right: 0; bottom: 0; width: 258px; background: #101426; border-left: 1px solid rgba(255,255,255,.08); padding: 25px 16px 18px; display: flex; flex-direction: column; direction: rtl; }
 .global-brand { display:flex;align-items:center;gap:10px;padding:0 10px 22px;border-bottom:1px solid rgba(255,255,255,.08); }.global-brand strong,.global-brand small{display:block}.global-brand strong{font-size:.9rem}.global-brand small{font-size:.65rem;color:var(--muted);margin-top:4px}.global-caption{font-size:.67rem;color:#646b86;font-weight:800;margin:22px 12px 8px}.global-sidebar nav{display:flex;flex-direction:column;gap:3px}.global-side-link{display:flex;align-items:center;gap:12px;color:#aab0c5;text-decoration:none;padding:10px 12px;border-radius:10px;font-size:.84rem}.global-side-link span{width:20px;text-align:center;color:#8188a3}.global-side-link:hover{background:rgba(255,255,255,.05);color:white}.global-side-link.active{background:linear-gradient(90deg,rgba(108,92,231,.28),rgba(0,210,168,.08));color:white}.global-side-link.active span{color:var(--accent2)}.global-side-bottom{margin-top:auto}.global-create{display:flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;background:var(--accent);color:white;padding:11px;border-radius:10px;font-size:.78rem;font-weight:800;margin-bottom:10px}.global-logout{margin:0;background:transparent;border:1px solid rgba(255,255,255,.1);color:#aab0c5;padding:9px;font-size:.76rem}.global-topbar{height:70px;max-width:980px;margin-right:298px;margin-left:auto;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:flex-end;direction:rtl}.global-account{display:flex;align-items:center;gap:10px;color:#aab0c5;font-size:.78rem}.global-account a{color:#aab0c5;text-decoration:none;font-size:1.2rem}.global-account a[href="login.html"]{color:var(--accent2);font-size:.76rem}.global-avatar{display:flex;align-items:center;justify-content:center;width:31px;height:31px;border-radius:50%;background:linear-gradient(135deg,#6c5ce7,#00bfa0);color:white;font-weight:800}.global-menu-btn,.global-mobile-brand,.global-drawer,.global-overlay{display:none}.app-page .wrap{max-width:980px;margin:80px 0 0 auto}.app-page .wrap > .card{margin-bottom:16px}.app-page .nav-links{display:none}
 @media(max-width:680px){.app-page{padding:0 15px 20px}.global-sidebar{display:none}.global-topbar{height:62px;margin:0;max-width:none;justify-content:space-between}.global-menu-btn{display:block;width:auto;margin:0;padding:5px;background:transparent;color:var(--text);font-size:1.25rem}.global-mobile-brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-size:.8rem}.global-account{font-size:.7rem}.global-account a{display:none}.app-page .wrap{margin:23px 0 0;max-width:none}.global-drawer{display:flex;position:fixed;z-index:21;right:0;top:0;bottom:0;width:285px;background:#101426;flex-direction:column;padding:20px;transform:translateX(105%);transition:transform .22s ease;box-shadow:-15px 0 35px rgba(0,0,0,.3);direction:rtl}.global-drawer.open{transform:translateX(0)}.global-drawer-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:18px;margin-bottom:11px;border-bottom:1px solid rgba(255,255,255,.08)}.global-drawer-head button{width:auto;margin:0;padding:0;background:transparent;color:var(--muted);font-size:1.5rem}.global-drawer .global-side-link{padding:12px}.global-drawer .global-create{margin-top:auto}.global-overlay{display:block;position:fixed;z-index:20;inset:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:.2s}.global-overlay.open{opacity:1;pointer-events:auto}}
+
+/* تحسينات الاستجابة للصفحات الداخلية */
+@media (min-width: 681px) and (max-width: 1020px) {
+  .global-sidebar { width: 220px; padding-inline: 12px; }
+  .global-topbar { margin-right: 240px; max-width: none; margin-left: 20px; }
+  .app-page { padding-inline: 20px; }
+  .app-page .wrap { max-width: none; width: 100%; margin-top: 52px; }
+  .global-side-link { gap: 8px; padding-inline: 9px; font-size: .78rem; }
+  .global-brand strong { font-size: .78rem; }
+  .global-brand small { font-size: .6rem; }
+}
+
+/* منع تمدد أزرار الحالة وإظهارها كإجراء ثانوي واضح */
+.card > button.secondary { max-width: 220px; }
+.error + button.secondary { margin-top: 8px; }
+
+/* حالات فارغة أكثر وضوحًا داخل البطاقات */
+.pending, .error { line-height: 1.8; }
+
+@media (max-width: 680px) {
+  .app-page .wrap > .card { padding: 16px; }
+  .global-drawer { width: min(285px, 86vw); }
+  .chat-form { align-items: stretch; }
+  .chat-form input { min-width: 0; }
+  .chat-form button { flex: 0 0 auto; }
+}
+
+body.drawer-open { overflow: hidden; }
+
+/* الشريط الجانبي يتحول إلى قائمة قابلة للإغلاق على الأجهزة اللوحية أيضًا */
+@media (max-width: 860px) and (min-width: 681px) {
+  .global-sidebar { display: none; }
+  .global-topbar { height: 64px; margin: 0; max-width: none; padding: 0 20px; justify-content: space-between; }
+  .global-menu-btn { display: block; width: auto; margin: 0; padding: 5px; background: transparent; color: var(--text); font-size: 1.25rem; }
+  .global-mobile-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text); font-size: .8rem; }
+  .global-drawer { display: flex; position: fixed; z-index: 21; right: 0; top: 0; bottom: 0; width: min(285px, 86vw); background: #101426; flex-direction: column; padding: 20px; transform: translateX(105%); transition: transform .22s ease; box-shadow: -15px 0 35px rgba(0,0,0,.3); direction: rtl; }
+  .global-drawer.open { transform: translateX(0); }
+  .global-drawer-head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 18px; margin-bottom: 11px; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .global-drawer-head button { width: auto; margin: 0; padding: 0; background: transparent; color: var(--muted); font-size: 1.5rem; }
+  .global-drawer .global-side-link { padding: 12px; }
+  .global-drawer .global-create { margin-top: auto; }
+  .global-overlay { display: block; position: fixed; z-index: 20; inset: 0; background: rgba(0,0,0,.55); opacity: 0; pointer-events: none; transition: .2s; }
+  .global-overlay.open { opacity: 1; pointer-events: auto; }
+  .app-page { padding: 0 20px 20px; }
+  .app-page .wrap { margin: 28px 0 0; max-width: none; width: 100%; }
+}

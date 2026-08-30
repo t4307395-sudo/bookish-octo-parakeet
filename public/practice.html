@@ -46,15 +46,22 @@ let current = 0;
 let correctCount = 0;
 
 async function loadCategories() {
-  const res = await fetch('/api/practice/categories');
-  const data = await res.json().catch(() => ({ categories: [] }));
-  const select = document.getElementById('categorySelect');
-  (data.categories || []).forEach((c) => {
-    const opt = document.createElement('option');
-    opt.value = c.name;
-    opt.textContent = `${c.name} (${c.count} سؤال)`;
-    select.appendChild(opt);
-  });
+  try {
+    const res = await fetch('/api/practice/categories');
+    const data = await res.json().catch(() => ({ categories: [] }));
+    if (!res.ok) throw new Error(data.error || 'تعذر تحميل الفئات');
+    const select = document.getElementById('categorySelect');
+    (data.categories || []).forEach((c) => {
+      const opt = document.createElement('option');
+      opt.value = c.name;
+      opt.textContent = `${c.name} (${c.count} سؤال)`;
+      select.appendChild(opt);
+    });
+  } catch (error) {
+    const err = document.getElementById('setupErr');
+    err.textContent = error.message || 'تعذر تحميل فئات الأسئلة. حاول مرة أخرى.';
+    err.style.display = 'block';
+  }
 }
 loadCategories();
 
@@ -72,16 +79,25 @@ async function startRound() {
 
   const params = new URLSearchParams({ count });
   if (category) params.set('category', category);
-  const res = await fetch(`/api/practice?${params}`);
-  const data = await res.json().catch(() => ({ questions: [] }));
+  try {
+    const res = await fetch(`/api/practice?${params}`);
+    const data = await res.json().catch(() => ({ questions: [] }));
+    if (!res.ok) throw new Error(data.error || 'تعذر تحميل الأسئلة');
 
-  if (!data.questions || data.questions.length === 0) {
-    err.textContent = 'مفيش أسئلة كفاية في البنك ده دلوقتي';
+    if (!data.questions || data.questions.length === 0) {
+      err.textContent = 'لا توجد أسئلة كافية حاليًا لهذه الفئة. جرّب فئة أخرى أو قلّل العدد.';
+      err.style.display = 'block';
+      return;
+    }
+
+    questions = data.questions;
+    err.style.display = 'none';
+  } catch (error) {
+    err.textContent = error.message || 'تعذر بدء التدريب. تأكد من اتصال قاعدة البيانات وحاول مرة أخرى.';
     err.style.display = 'block';
     return;
   }
 
-  questions = data.questions;
   current = 0;
   correctCount = 0;
   document.getElementById('setupBox').style.display = 'none';
@@ -129,6 +145,14 @@ async function submitAnswer(opt, btn) {
     body: JSON.stringify({ question_id: questions[current].id, selected_option: opt }),
   });
   const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    document.querySelectorAll('#options .option-btn').forEach((b) => b.disabled = false);
+    btn.style.background = '';
+    const err = document.getElementById('setupErr');
+    err.textContent = data.error || 'تعذر تسجيل الإجابة. حاول مرة أخرى.';
+    err.style.display = 'block';
+    return;
+  }
   if (data.correct) {
     correctCount++;
     btn.style.background = 'rgba(0,210,168,0.25)';

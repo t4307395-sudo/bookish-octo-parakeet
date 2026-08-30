@@ -25,19 +25,28 @@ let question = null;
 
 async function load() {
   const box = document.getElementById('box');
-  const res = await fetch('/api/daily');
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    box.innerHTML = `<p class="error">${data.error || 'حصل خطأ'}</p>`;
-    return;
+  box.innerHTML = '<p class="pending">جاري تحميل سؤال اليوم...</p>';
+  try {
+    const res = await fetch('/api/daily');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showDailyError(box, data.error || 'تعذر تحميل سؤال اليوم.');
+      return;
+    }
+    question = data.question;
+    if (data.already_answered) {
+      renderAnswered(data.your_answer, data.correct_option);
+      return;
+    }
+    renderQuestion();
+  } catch (error) {
+    showDailyError(box, error.message || 'تعذر الاتصال بالخادم. حاول مرة أخرى.');
   }
-  question = data.question;
+}
 
-  if (data.already_answered) {
-    renderAnswered(data.your_answer, data.correct_option);
-    return;
-  }
-  renderQuestion();
+function showDailyError(box, message) {
+  box.innerHTML = `<p class="error">${message}</p><button class="secondary" id="retryDaily">إعادة المحاولة</button>`;
+  document.getElementById('retryDaily').addEventListener('click', load);
 }
 
 function renderQuestion() {
@@ -89,7 +98,8 @@ async function submitAnswer(opt) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    document.getElementById('box').innerHTML = `<p class="error">${data.error || 'حصل خطأ'}</p>`;
+    document.querySelectorAll('#options .option-btn').forEach((b) => b.disabled = false);
+    showDailyError(document.getElementById('box'), data.error || 'تعذر تسجيل الإجابة. حاول مرة أخرى.');
     return;
   }
   renderAnswered({ selected_option: opt, is_correct: data.correct ? 1 : 0 }, data.correct_option, data.progress);
