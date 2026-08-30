@@ -80,6 +80,14 @@ CREATE TABLE IF NOT EXISTS sessions (
 
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 
+-- محاولات المصادقة المستخدمة في rate limiting للتسجيل والدخول.
+CREATE TABLE IF NOT EXISTS login_attempts (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  identifier TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_login_attempts_identifier ON login_attempts(identifier, created_at);
+
 -- ربط اختياري: لو اللاعب داخل بحساب مسجل، نربطه بيوزره عشان تتحسب نقاطه
 -- في اللوحة العامة. لسه ممكن يلعب كضيف (user_id يفضل NULL).
 CREATE INDEX IF NOT EXISTS idx_participants_user ON participants(user_id);
