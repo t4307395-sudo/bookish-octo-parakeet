@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختبار تنافسي</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="card" id="joinBox">
+    <h1 id="quizTitle">جاري التحميل...</h1>
+    <p class="subtitle">اكتب اسمك وابدأ الاختبار. الوقت هيبدأ يجري أول ما تدوس ابدأ.</p>
+    <label>اسمك</label>
+    <input type="text" id="playerName" placeholder="اكتب اسمك هنا">
+    <button id="startBtn">ابدأ الاختبار</button>
+    <div class="error" id="joinErr" style="display:none"></div>
+  </div>
+
+  <div class="card" id="quizBox" style="display:none">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <span class="timer" id="timer">--:--</span>
+      <span class="progress" id="progress"></span>
+    </div>
+    <h2 id="qText" style="margin-top:16px;"></h2>
+    <div id="options"></div>
+    <button id="nextBtn">التالي</button>
+  </div>
+
+  <div class="card" id="doneBox" style="display:none">
+    <h2>🎉 خلصت الاختبار!</h2>
+    <p id="myScore"></p>
+    <p class="hint">النتائج النهائية لكل المتنافسين هتظهر لما الكل يخلص.</p>
+    <a href="#" id="goResults"><button>شوف النتائج</button></a>
+  </div>
+
+</div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const quizId = params.get('quiz');
+const challengeId = params.get('challenge'); // موجودة لو الرابط ده تحدي من صاحبك
+let quiz = null, participantId = null, participantToken = null, startedAt = null, durationSec = 600;
+let current = 0, answers = {}, timerInterval = null;
+
+if (!quizId) {
+  document.getElementById('quizTitle').textContent = 'رابط غير صحيح - محتاج ?quiz=الكود';
+} else {
+  loadQuiz();
+  if (challengeId) {
+    const note = document.createElement('p');
+    note.className = 'subtitle';
+    note.textContent = '🔥 صاحبك تحداك على الاختبار ده! اثبت إنك أحسن منه.';
+    document.getElementById('joinBox').prepend(note);
+  }
+}
+
+async function loadQuiz() {
+  const res = await fetch(`/api/quizzes/${quizId}`);
+  const data = await res.json();
+  if (!res.ok) {
+    document.getElementById('quizTitle').textContent = data.error || 'خطأ';
+    return;
+  }
+  quiz = data;
+  durationSec = data.duration_seconds;
+  document.getElementById('quizTitle').textContent = data.title;
+}
+
+document.getElementById('startBtn').addEventListener('click', async () => {
+  const name = document.getElementById('playerName').value.trim();
+  const err = document.getElementById('joinErr');
+  err.style.display = 'none';
+  if (!name) { err.textContent = 'اكتب اسمك'; err.style.display='block'; return; }
+  if (!quiz) { err.textContent = 'الاختبار لسه بيتحمل، استنى ثانية'; err.style.display='block'; return; }
+
+  const joinUrl = challengeId ? `/api/challenges/${challengeId}/accept` : `/api/quizzes/${quizId}/join`;
+  const res = await fetch(joinUrl, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ name })
+  });
+  const data = await res.json();
+  if (!res.ok) { err.textContent = data.error; err.style.display='block'; return; }
+
+  participantId = data.participant_id;
+  participantToken = data.participant_token;
+  startedAt = data.started_at;
+  document.getElementById('joinBox').style.display = 'none';
+  document.getElementById('quizBox').style.display = 'block';
+  startTimer();
+  renderQuestion();
+});
+
+function startTimer() {
+  const endAt = startedAt + durationSec * 1000;
+  timerInterval = setInterval(() => {
+    const remaining = Math.max(0, Math.round((endAt - Date.now()) / 1000));
+    const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+    const s = String(remaining % 60).padStart(2, '0');
+    document.getElementById('timer').textContent = `${m}:${s}`;
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      finishQuiz();
+    }
+  }, 500);
+}
+
+function renderQuestion() {
+  const q = quiz.questions[current];
+  document.getElementById('progress').textContent = `سؤال ${current + 1} من ${quiz.questions.length}`;
+  document.getElementById('qText').textContent = q.text;
+
+  const opts = [['a', q.option_a], ['b', q.option_b], ['c', q.option_c], ['d', q.option_d]]
+    .filter(([, text]) => text);
+
+  const box = document.getElementById('options');
+  box.innerHTML = '';
+  opts.forEach(([key, text]) => {
+    const b = document.createElement('button');
+    b.className = 'option-btn' + (answers[q.id] === key ? ' selected' : '');
+    b.textContent = text;
+    b.onclick = () => selectOption(q.id, key, b);
+    box.appendChild(b);
+  });
+
+  document.getElementById('nextBtn').textContent =
+    current === quiz.questions.length - 1 ? 'إنهاء الاختبار' : 'التالي';
+}
+
+function selectOption(questionId, key, btn) {
+  answers[questionId] = key;
+  document.querySelectorAll('.option-btn').forEach(el => el.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  fetch(`/api/participants/${participantId}/answer`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-participant-token': participantToken },
+    body: JSON.stringify({ question_id: questionId, selected_option: key })
+  }).then(async (res) => {
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'تعذر حفظ الإجابة');
+  }).catch((err) => {
+    document.getElementById('joinErr').textContent = err.message;
+    document.getElementById('joinErr').style.display = 'block';
+  });
+}
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (current < quiz.questions.length - 1) {
+    current++;
+    renderQuestion();
+  } else {
+    clearInterval(timerInterval);
+    finishQuiz();
+  }
+});
+
+async function finishQuiz() {
+  if (!participantId || !participantToken) return;
+  document.getElementById('quizBox').style.display = 'none';
+  try {
+    const res = await fetch(`/api/participants/${participantId}/finish`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-participant-token': participantToken },
+      body: JSON.stringify({})
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || typeof data.score !== 'number') throw new Error(data.error || 'تعذر إنهاء الاختبار، حاول مرة أخرى.');
+    document.getElementById('doneBox').style.display = 'block';
+  document.getElementById('myScore').textContent = `درجتك: ${data.score} من ${data.total_questions}`;
+  document.getElementById('goResults').href = `/results.html?quiz=${quizId}&me=${participantId}`;
+
+    if (data.progress) {
+    const p = data.progress;
+    const note = document.createElement('p');
+    note.className = 'subtitle';
+    note.textContent = `+${p.xp_gained} XP${p.leveled_up ? ' 🎉 وصلت للمستوى ' + p.level : ''} · 🔥 ${p.streak_count} يوم متتالي`;
+      document.getElementById('doneBox').appendChild(note);
+    }
+  } catch (err) {
+    document.getElementById('quizBox').style.display = 'block';
+    const joinErr = document.getElementById('joinErr');
+    joinErr.textContent = err.message;
+    joinErr.style.display = 'block';
+  }
+}
+</script>
+  <script src="app-shell.js"></script>
+</body>
+</html>
