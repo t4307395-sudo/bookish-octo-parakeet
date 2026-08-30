@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Musical Fishstick — منصة الاختبارات والتدريب التنافسية">
+  <title>لوحة التحكم | Musical Fishstick</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-page">
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="التنقل الرئيسي">
+      <div class="brand-block">
+        <div class="brand-mark">M</div>
+        <div><strong>Musical Fishstick</strong><span>منصة التعلم التنافسي</span></div>
+      </div>
+      <nav class="side-nav">
+        <p class="nav-caption">الرئيسية</p>
+        <a class="side-link active" href="index.html"><span>⌂</span> لوحة التحكم</a>
+        <a class="side-link" href="my-quizzes.html"><span>▣</span> اختباراتي</a>
+        <a class="side-link" href="practice.html"><span>◎</span> التدريب الحر</a>
+        <p class="nav-caption">التعلم والمجتمع</p>
+        <a class="side-link" href="daily.html"><span>◷</span> سؤال اليوم</a>
+        <a class="side-link" href="mistakes.html"><span>✓</span> بنك أخطائي</a>
+        <a class="side-link" href="history.html"><span>↺</span> سجل اختباراتي</a>
+        <a class="side-link" href="classes.html"><span>⌘</span> فصولي</a>
+        <a class="side-link" href="community.html"><span>✦</span> الساحة العامة</a>
+        <a class="side-link" href="leaderboard.html"><span>♛</span> لوحة الصدارة</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-tip"><span>✦</span><div><b>نصيحة اليوم</b><small>راجع أخطاءك يوميًا لتحسن نتيجتك.</small></div></div>
+        <button class="side-logout" id="logoutBtn">تسجيل الخروج</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="mobile-menu-btn" id="menuBtn" aria-label="فتح القائمة">☰</button>
+        <div class="mobile-brand"><span class="brand-mark small">M</span><strong>Musical Fishstick</strong></div>
+        <div class="topbar-actions">
+          <a class="top-icon" href="community.html" aria-label="الساحة العامة">◌</a>
+          <div class="user-chip"><div class="avatar" id="avatar">؟</div><div><b id="userName">أهلاً بك</b><small id="userRole">زائر</small></div></div>
+        </div>
+      </header>
+
+      <div class="mobile-drawer" id="mobileDrawer">
+        <div class="drawer-head"><strong>القائمة الرئيسية</strong><button id="closeMenu" aria-label="إغلاق القائمة">×</button></div>
+        <a href="index.html" class="active">⌂ لوحة التحكم</a><a href="my-quizzes.html">▣ اختباراتي</a><a href="practice.html">◎ التدريب الحر</a><a href="daily.html">◷ سؤال اليوم</a><a href="mistakes.html">✓ بنك أخطائي</a><a href="history.html">↺ السجل</a><a href="classes.html">⌘ فصولي</a><a href="community.html">✦ الساحة العامة</a><a href="leaderboard.html">♛ الصدارة</a>
+        <button class="side-logout" id="mobileLogout">تسجيل الخروج</button>
+      </div>
+      <div class="drawer-overlay" id="drawerOverlay"></div>
+
+      <section class="page-heading">
+        <div><p class="eyebrow">لوحة التحكم</p><h1 id="welcomeTitle">أهلاً بك في ملتقى الطلاب</h1><p class="subtitle">كل أدوات الاختبار والتدريب والتقدم في مكان واحد.</p></div>
+        <a class="primary-action" href="quiz-create.html"><span>＋</span> إنشاء اختبار جديد</a>
+      </section>
+
+      <section class="hero-card">
+        <div class="hero-copy"><span class="hero-kicker">ابدأ رحلتك اليوم</span><h2>اختبر نفسك، نافس أصحابك، وطوّر مستواك.</h2><p>أنشئ اختبارًا تنافسيًا أو ابدأ جولة تدريب قصيرة واحصل على تقدم واضح.</p><div class="hero-actions"><a href="quiz-create.html" class="hero-btn">إنشاء اختبار جديد <span>←</span></a><a href="practice.html" class="hero-btn ghost">ابدأ التدريب <span>←</span></a></div></div>
+        <div class="hero-art" aria-hidden="true"><div class="art-ring ring-one"></div><div class="art-ring ring-two"></div><div class="art-card floating-card"><span>نتيجتك الأخيرة</span><b>86%</b><small>ممتاز، استمر!</small></div><div class="art-star">✦</div></div>
+      </section>
+
+      <section class="stats-grid" aria-label="إحصائيات التقدم">
+        <div class="stat-card"><div class="stat-icon violet">✦</div><div><small>المستوى</small><strong id="levelValue">—</strong><span id="levelMeta">ابدأ رحلتك</span></div></div>
+        <div class="stat-card"><div class="stat-icon turquoise">↗</div><div><small>إجمالي XP</small><strong id="xpValue">—</strong><span>نقاط التقدم</span></div></div>
+        <div class="stat-card"><div class="stat-icon orange">♨</div><div><small>سلسلة الأيام</small><strong id="streakValue">—</strong><span>حافظ على عادتك</span></div></div>
+        <div class="stat-card"><div class="stat-icon pink">✓</div><div><small>الاختبارات المكتملة</small><strong id="testsValue">—</strong><span>استمر في الإنجاز</span></div></div>
+      </section>
+
+      <section class="content-grid">
+        <div class="panel activity-panel"><div class="panel-heading"><div><p class="eyebrow">متابعة التقدم</p><h2>آخر النشاط</h2></div><a href="history.html">عرض السجل ←</a></div><div id="activityList" class="activity-list"><div class="loading-line">جاري تحميل نشاطك...</div></div></div>
+        <div class="panel quick-panel"><div class="panel-heading"><div><p class="eyebrow">وصول سريع</p><h2>ماذا تريد أن تفعل؟</h2></div></div><div class="quick-grid"><a href="daily.html" class="quick-card"><span class="quick-icon yellow">◷</span><b>سؤال اليوم</b><small>تعلم شيئًا جديدًا</small></a><a href="mistakes.html" class="quick-card"><span class="quick-icon red">✓</span><b>بنك أخطائي</b><small>راجع ما أخطأت فيه</small></a><a href="classes.html" class="quick-card"><span class="quick-icon blue">⌘</span><b>فصولي</b><small>تعلم مع مجموعتك</small></a><a href="leaderboard.html" class="quick-card"><span class="quick-icon green">♛</span><b>الصدارة</b><small>شاهد ترتيبك</small></a></div></div>
+      </section>
+
+      <section class="panel weekly-panel"><div class="panel-heading"><div><p class="eyebrow">استمرارية التعلم</p><h2>تقدمك هذا الأسبوع</h2></div><span class="week-label">هدفك: 5 جلسات</span></div><div class="progress-track"><div class="progress-fill" id="weeklyProgress"></div></div><div class="week-days"><span>السبت</span><span>الأحد</span><span>الاثنين</span><span>الثلاثاء</span><span>الأربعاء</span><span>الخميس</span><span>الجمعة</span></div></section>
+      <footer class="dashboard-footer">Musical Fishstick <span>·</span> اختبر معرفتك وطوّر مستواك</footer>
+    </main>
+  </div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let currentUser = null;
+function setText(id, value) { if ($(id)) $(id).textContent = value; }
+function escapeText(value) { return String(value ?? ''); }
+function fmtDate(ts) { return new Date(ts).toLocaleDateString('ar-EG', { day:'numeric', month:'short' }); }
+async function loadDashboard() {
+  try {
+    const res = await fetch('/api/auth/me');
+    const data = await res.json().catch(() => ({}));
+    currentUser = data.user || null;
+    if (!currentUser) {
+      setText('welcomeTitle', 'أهلاً بك في ملتقى الطلاب'); setText('userRole', 'زائر'); setText('levelValue', '—'); setText('xpValue', '—'); setText('streakValue', '—'); setText('testsValue', '—');
+      $('activityList').innerHTML = '<div class="empty-state"><b>سجّل دخولك لتشاهد تقدمك</b><span>احفظ نتائجك وXP وبنك أخطائك مع حسابك.</span><a href="login.html" class="text-action">تسجيل الدخول ←</a></div>';
+      $('logoutBtn').style.display = 'none'; $('mobileLogout').style.display = 'none'; return;
+    }
+    const name = currentUser.name || 'صديقي';
+    setText('welcomeTitle', `أهلاً يا ${name}`); setText('userName', name); setText('userRole', currentUser.role === 'admin' ? 'مدير المنصة' : 'طالب'); setText('avatar', name.charAt(0));
+    setText('levelValue', currentUser.level ?? 1); setText('xpValue', Number(currentUser.xp || 0).toLocaleString('ar-EG')); setText('streakValue', `${currentUser.streak_count || 0} أيام`);
+    const qRes = await fetch('/api/quizzes/mine'); const qData = await qRes.json().catch(() => ({})); const quizzes = qData.quizzes || [];
+    setText('testsValue', quizzes.reduce((sum, q) => sum + Number(q.finished_count || 0), 0));
+    if (!quizzes.length) { $('activityList').innerHTML = '<div class="empty-state"><b>لسه مفيش نشاط هنا</b><span>أنشئ أول اختبار أو ابدأ جولة تدريبية.</span><a href="quiz-create.html" class="text-action">أنشئ اختبارك الأول ←</a></div>'; }
+    else { $('activityList').innerHTML = quizzes.slice(0, 3).map(q => `<a class="activity-row" href="results.html?quiz=${encodeURIComponent(q.id)}"><span class="activity-badge">✦</span><span class="activity-info"><b>${escapeText(q.title)}</b><small>${fmtDate(q.created_at)} · ${q.finished_count || 0} مشاركين أنهوا الاختبار</small></span><strong>${q.avg_score == null ? '—' : Number(q.avg_score).toFixed(0) + '%'}</strong><span class="row-arrow">←</span></a>`).join(''); }
+    $('weeklyProgress').style.width = `${Math.min(100, Math.max(10, Number(currentUser.streak_count || 0) * 14))}%`;
+  } catch (error) { $('activityList').innerHTML = '<div class="empty-state"><b>تعذر تحميل البيانات الآن</b><span>تحقق من الاتصال وحاول مرة أخرى.</span></div>'; }
+}
+async function logout() { await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {}); location.href = 'login.html'; }
+$('logoutBtn').addEventListener('click', logout); $('mobileLogout').addEventListener('click', logout);
+$('menuBtn').addEventListener('click', () => { $('mobileDrawer').classList.add('open'); $('drawerOverlay').classList.add('open'); });
+$('closeMenu').addEventListener('click', () => { $('mobileDrawer').classList.remove('open'); $('drawerOverlay').classList.remove('open'); });
+$('drawerOverlay').addEventListener('click', () => { $('mobileDrawer').classList.remove('open'); $('drawerOverlay').classList.remove('open'); });
+loadDashboard();
+</script>
+</body>
+</html>

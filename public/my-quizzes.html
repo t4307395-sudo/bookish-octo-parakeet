@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اختباراتي</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="nav-links">
+    <a href="index.html">⟵ رجوع</a>
+    <a href="index.html">+ اختبار جديد</a>
+  </div>
+
+  <div class="card">
+    <h1>📋 اختباراتي</h1>
+    <p class="subtitle">كل الاختبارات التنافسية اللي أنشأتها، مع عدد اللي حلوها ومتوسط الدرجات.</p>
+    <p class="error" id="err" style="display:none"></p>
+  </div>
+
+  <div id="list"><p class="pending">جاري التحميل...</p></div>
+</div>
+
+<script>
+function fmtDate(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+async function load() {
+  const list = document.getElementById('list');
+  const res = await fetch('/api/quizzes/mine');
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    list.innerHTML = '';
+    const err = document.getElementById('err');
+    err.textContent = data.error || 'حصل خطأ';
+    err.style.display = 'block';
+    return;
+  }
+
+  list.innerHTML = '';
+  if (!data.quizzes || data.quizzes.length === 0) {
+    list.innerHTML = '<div class="card"><p class="pending">لسه معملتش أي اختبار. <a href="index.html">اعمل واحد دلوقتي</a>.</p></div>';
+    return;
+  }
+
+  data.quizzes.forEach((q) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const h = document.createElement('h1');
+    h.style.fontSize = '1.1rem';
+    h.textContent = q.title;
+    card.appendChild(h);
+
+    const meta = document.createElement('p');
+    meta.className = 'subtitle';
+    const avg = q.avg_score !== null && q.avg_score !== undefined
+      ? `متوسط الدرجات: ${Number(q.avg_score).toFixed(1)}/${q.total_questions ?? '?'}`
+      : 'محدش خلص لسه';
+    meta.textContent = `${fmtDate(q.created_at)} · ${q.finished_count} خلصوا من أصل ${q.joined_count} انضموا · ${avg}`;
+    card.appendChild(meta);
+
+    const links = document.createElement('div');
+    links.style.display = 'flex';
+    links.style.gap = '10px';
+
+    const resultsBtn = document.createElement('a');
+    resultsBtn.href = `results.html?quiz=${q.id}`;
+    resultsBtn.innerHTML = '<button style="margin:0">النتائج والتحليل</button>';
+    links.appendChild(resultsBtn);
+
+    const playBtn = document.createElement('a');
+    playBtn.href = `play.html?quiz=${q.id}`;
+    playBtn.target = '_blank';
+    playBtn.innerHTML = '<button class="secondary" style="margin:0">رابط الاختبار</button>';
+    links.appendChild(playBtn);
+
+    card.appendChild(links);
+    list.appendChild(card);
+  });
+}
+load();
+</script>
+  <script src="app-shell.js"></script>
+</body>
+</html>

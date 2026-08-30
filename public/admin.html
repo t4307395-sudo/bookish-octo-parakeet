@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة الأدمن - رفع الأسئلة</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="card" id="gate">
+    <p class="subtitle">جاري التحقق من صلاحياتك...</p>
+  </div>
+
+  <div class="card" id="panel" style="display:none">
+    <h1>📤 رفع أسئلة (JSON)</h1>
+    <p class="subtitle">
+      الصق مصفوفة JSON للأسئلة، أو ارفع ملف <code>.json</code>. الشكل المطلوب:
+    </p>
+    <div class="invite-box" style="margin-bottom:16px; white-space:pre; font-size:0.8rem;">{
+  "category": "رياضيات",
+  "questions": [
+    {"text": "...", "option_a": "...", "option_b": "...",
+     "option_c": "...", "option_d": "...", "correct_option": "a"}
+  ]
+}</div>
+
+    <label>فئة الأسئلة (اختياري)</label>
+    <input type="text" id="category" placeholder="مثال: رياضيات">
+
+    <label style="display:flex; align-items:center; gap:8px; margin-top:14px;">
+      <input type="checkbox" id="examOnly" style="width:auto;">
+      أسئلة امتحان فقط (تختفي من التدريب الحر وسؤال اليوم، وتفضل محفوظة بس للاختبارات الحقيقية)
+    </label>
+
+    <label>ملف JSON (اختياري - أو الصق تحت)</label>
+    <input type="file" id="file" accept="application/json">
+
+    <label>أو الصق الـ JSON هنا</label>
+    <textarea id="jsonText" placeholder='{"questions": [...]}'></textarea>
+
+    <button id="uploadBtn">رفع الأسئلة</button>
+    <div class="error" id="err" style="display:none"></div>
+    <p class="hint" id="ok" style="display:none; color: var(--accent2);"></p>
+  </div>
+
+  <div class="card" id="reportsPanel" style="display:none">
+    <h1>🚩 بلاغات الأسئلة</h1>
+    <p class="subtitle">أسئلة بلّغ عنها طلاب لأن فيها مشكلة (إجابة غلط، غموض، إلخ).</p>
+    <div id="reportsList"><p class="pending">جاري التحميل...</p></div>
+  </div>
+</div>
+
+<script>
+const gate = document.getElementById('gate');
+const panel = document.getElementById('panel');
+
+async function checkAdmin() {
+  const res = await fetch('/api/auth/me');
+  const data = await res.json().catch(() => ({ user: null }));
+  if (!data.user) {
+    gate.innerHTML = '<p class="subtitle">لازم تسجل دخول الأول. <a href="login.html">تسجيل الدخول</a></p>';
+    return;
+  }
+  if (data.user.role !== 'admin') {
+    gate.innerHTML = '<p class="subtitle">الصفحة دي للأدمن بس.</p>';
+    return;
+  }
+  gate.style.display = 'none';
+  panel.style.display = 'block';
+  document.getElementById('reportsPanel').style.display = 'block';
+  loadReports();
+}
+checkAdmin();
+
+async function loadReports() {
+  const list = document.getElementById('reportsList');
+  const res = await fetch('/api/admin/reports');
+  const data = await res.json().catch(() => ({ reports: [] }));
+  list.innerHTML = '';
+  if (!data.reports || data.reports.length === 0) {
+    list.innerHTML = '<p class="pending">مفيش بلاغات مفتوحة دلوقتي 🎉</p>';
+    return;
+  }
+  data.reports.forEach((r) => {
+    const card = document.createElement('div');
+    card.className = 'mistake-card';
+
+    const q = document.createElement('div');
+    q.className = 'q';
+    q.textContent = r.text;
+    card.appendChild(q);
+
+    const meta = document.createElement('p');
+    meta.className = 'hint';
+    meta.textContent = `الإجابة الصح المسجلة: ${r.correct_option} · البنك: ${r.quiz_id}${r.reason ? ' · السبب: ' + r.reason : ''}`;
+    card.appendChild(meta);
+
+    const btn = document.createElement('button');
+    btn.textContent = 'تم المراجعة';
+    btn.addEventListener('click', async () => {
+      await fetch(`/api/admin/reports/${r.id}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ status: 'resolved' }),
+      });
+      loadReports();
+    });
+    card.appendChild(btn);
+
+    list.appendChild(card);
+  });
+}
+
+document.getElementById('file').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('jsonText').value = await file.text();
+});
+
+document.getElementById('uploadBtn').addEventListener('click', async () => {
+  const err = document.getElementById('err');
+  const ok = document.getElementById('ok');
+  err.style.display = 'none';
+  ok.style.display = 'none';
+
+  let parsed;
+  try {
+    parsed = JSON.parse(document.getElementById('jsonText').value);
+  } catch (e) {
+    err.textContent = 'الـ JSON مش صالح، راجع الصيغة';
+    err.style.display = 'block';
+    return;
+  }
+
+  const category = document.getElementById('category').value.trim();
+  if (category) parsed.category = category;
+  if (document.getElementById('examOnly').checked) parsed.exam_only = true;
+
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled = true;
+  btn.textContent = 'جاري الرفع...';
+
+  try {
+    const res = await fetch('/api/admin/questions/import', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(parsed),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      err.textContent = data.error || 'حصل خطأ أثناء الرفع';
+      err.style.display = 'block';
+    } else {
+      ok.textContent = `تم رفع ${data.inserted} سؤال في البنك (${data.bank})`;
+      ok.style.display = 'block';
+      document.getElementById('jsonText').value = '';
+    }
+  } catch (e) {
+    err.textContent = 'تعذر الاتصال بالخادم';
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'رفع الأسئلة';
+  }
+});
+</script>
+  <script src="app-shell.js"></script>
+</body>
+</html>
