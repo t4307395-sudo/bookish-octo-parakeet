@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بنك أخطائي</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="nav-links"><a href="index.html">⟵ رجوع</a></div>
+  <div class="card">
+    <h1>بنك أخطائي</h1>
+    <p class="subtitle">راجع الأسئلة اللي أجبت عليها غلط قبل كده. لما تجاوبها صح بتختفي من هنا.</p>
+    <p class="error" id="err" style="display:none"></p>
+  </div>
+  <div id="list"></div>
+</div>
+
+<script>
+async function load() {
+  const res = await fetch('/api/mistakes');
+  const data = await res.json();
+  if (!res.ok) {
+    document.getElementById('err').textContent = data.error || 'خطأ';
+    document.getElementById('err').style.display = 'block';
+    return;
+  }
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  if (!data.mistakes.length) {
+    list.innerHTML = '<div class="card">مفيش أسئلة محتاجة مراجعة دلوقتي 🎉</div>';
+    return;
+  }
+  data.mistakes.forEach((m) => {
+    const card = document.createElement('div');
+    card.className = 'card mistake-card';
+
+    const q = document.createElement('div');
+    q.className = 'q';
+    q.textContent = m.text;
+    card.appendChild(q);
+
+    ['a','b','c','d'].forEach((opt) => {
+      const val = m['option_' + opt];
+      if (!val) return;
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = val;
+      btn.style.marginTop = 0;
+      btn.addEventListener('click', async () => {
+        const r = await fetch(`/api/mistakes/${m.mistake_id}/review`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ selected_option: opt }),
+        });
+        const d = await r.json();
+        if (d.correct) {
+          btn.style.background = 'rgba(0,210,168,0.25)';
+          setTimeout(load, 600);
+        } else {
+          btn.style.background = 'rgba(255,84,112,0.25)';
+        }
+      });
+      card.appendChild(btn);
+    });
+
+    list.appendChild(card);
+  });
+}
+load();
+</script>
+</body>
+</html>

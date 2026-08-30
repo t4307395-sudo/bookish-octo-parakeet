@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سؤال اليوم</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="nav-links"><a href="index.html">⟵ رجوع</a></div>
+
+  <div class="card">
+    <h1>📅 سؤال اليوم</h1>
+    <p class="subtitle">سؤال واحد بيتغير كل يوم، ونفسه لكل الطلاب. جاوب عليه صح واحافظ على السلسلة 🔥.</p>
+  </div>
+
+  <div class="card" id="box">
+    <p class="pending">جاري التحميل...</p>
+  </div>
+</div>
+
+<script>
+let question = null;
+
+async function load() {
+  const box = document.getElementById('box');
+  const res = await fetch('/api/daily');
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    box.innerHTML = `<p class="error">${data.error || 'حصل خطأ'}</p>`;
+    return;
+  }
+  question = data.question;
+
+  if (data.already_answered) {
+    renderAnswered(data.your_answer, data.correct_option);
+    return;
+  }
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const box = document.getElementById('box');
+  box.innerHTML = '';
+
+  const q = document.createElement('h2');
+  q.textContent = question.text;
+  box.appendChild(q);
+
+  const optionsBox = document.createElement('div');
+  optionsBox.id = 'options';
+  box.appendChild(optionsBox);
+
+  ['a', 'b', 'c', 'd'].forEach((opt) => {
+    const val = question['option_' + opt];
+    if (!val) return;
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = val;
+    btn.addEventListener('click', () => submitAnswer(opt));
+    optionsBox.appendChild(btn);
+  });
+
+  const reportLink = document.createElement('a');
+  reportLink.href = '#';
+  reportLink.className = 'hint';
+  reportLink.textContent = '🚩 أبلغ عن مشكلة في السؤال ده';
+  reportLink.addEventListener('click', async (e) => {
+    e.preventDefault();
+    await fetch(`/api/questions/${question.id}/report`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ reason: 'بلاغ من صفحة سؤال اليوم' }),
+    });
+    reportLink.textContent = '✅ اتبعت البلاغ، شكراً';
+  });
+  const p = document.createElement('p');
+  p.appendChild(reportLink);
+  box.appendChild(p);
+}
+
+async function submitAnswer(opt) {
+  document.querySelectorAll('#options .option-btn').forEach((b) => b.disabled = true);
+  const res = await fetch('/api/daily', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ question_id: question.id, selected_option: opt }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    document.getElementById('box').innerHTML = `<p class="error">${data.error || 'حصل خطأ'}</p>`;
+    return;
+  }
+  renderAnswered({ selected_option: opt, is_correct: data.correct ? 1 : 0 }, data.correct_option, data.progress);
+}
+
+function renderAnswered(yourAnswer, correctOption, progress) {
+  const box = document.getElementById('box');
+  box.innerHTML = '';
+
+  const q = document.createElement('h2');
+  q.textContent = question.text;
+  box.appendChild(q);
+
+  ['a', 'b', 'c', 'd'].forEach((opt) => {
+    const val = question['option_' + opt];
+    if (!val) return;
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = val;
+    btn.disabled = true;
+    if (opt === correctOption) btn.style.background = 'rgba(0,210,168,0.25)';
+    else if (opt === yourAnswer.selected_option) btn.style.background = 'rgba(255,84,112,0.25)';
+    box.appendChild(btn);
+  });
+
+  const note = document.createElement('p');
+  note.className = yourAnswer.is_correct ? 'hint' : 'error';
+  note.style.marginTop = '14px';
+  note.textContent = yourAnswer.is_correct ? '🎉 إجابة صح! ارجع بكرة عشان تكمل السلسلة.' : 'إجابة غلط، الصح كان موضح فوق. ارجع بكرة لسؤال جديد.';
+  box.appendChild(note);
+
+  if (progress) {
+    const p = document.createElement('p');
+    p.className = 'hint';
+    p.textContent = `+${progress.xp_gained} XP · المستوى ${progress.level} · 🔥 ${progress.streak_count}`;
+    box.appendChild(p);
+  }
+}
+
+load();
+</script>
+</body>
+</html>
